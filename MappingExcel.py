@@ -47,12 +47,21 @@ def mapping_fun(file1, file2, output_filename="invoice_register_detail.xlsx"):
 
     df = df[desired_columns]
     output = BytesIO()
+    df_modified = df.drop('Hierarchy', axis=1)
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-        df.drop('Hierarchy', axis=1).to_excel(writer, index=False, sheet_name='Sheet1')
+        df_modified.to_excel(writer, index=False, sheet_name='Sheet1')
         worksheet = writer.sheets['Sheet1']
-        for column, column_length in enumerate([len(str(x)) for x in df.drop('Hierarchy', axis=1).columns]):
-            max_length = max([len(str(x)) for x in df.drop('Hierarchy', axis=1).iloc[:, column]] + [column_length])
+        
+        # Set column widths
+        for column, column_length in enumerate([len(str(x)) for x in df_modified.columns]):
+            max_length = max([len(str(x)) for x in df_modified.iloc[:, column]] + [column_length])
             worksheet.set_column(column, column, max(max_length + 2, 20))
+        num_rows, num_cols = df_modified.shape
+        worksheet.add_table(0, 0, num_rows, num_cols - 1, {
+        'columns': [{'header': col} for col in df_modified.columns],  # Explicitly define headers
+        'header_row': True,
+        'autofilter': True,
+        'style': 'Table Style Medium 2' })
 
     output.seek(0)
 
