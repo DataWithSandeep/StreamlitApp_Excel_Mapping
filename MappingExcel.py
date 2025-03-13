@@ -32,11 +32,28 @@ def mapping_fun(file1, file2, output_filename="invoice_register_detail.xlsx"):
     df = invoice2.copy()
     df['Hierarchy'] = df['Hierarchy'].apply(lambda x: x.split(',')[0])
     df[['Hierarchy1', 'Hierarchy2']] = df['Hierarchy'].str.split('>>', expand=True)
-    df = df.drop('Hierarchy', axis=1)
+    desired_columns = ['Company GSTIN', 'Company CIN', 'Business Unit', 
+                        'Parent Hierarchy', 'Child Hierarchy', 'Document No',
+                        'Document Date', 'Booking No', 'Application No', 
+                        'Generation Date', 'Validation Date', 'Customer Code', 
+                        'Customer Name', 'Customer Name Arabic', 'Customer Email Id', 
+                        'Finance Ledger Name', 'Unit No', 'DM Plot No', 'Related Party', 
+                        'Grace Period', 'Period From', 'Period To', 'Invoice Type', 
+                        'Invoice Month', 'Due Date', 'GSTIN', 'Place of Supply', 
+                        'Area (Sq Feet)', 'Billing Rate', 'RevenueHead Description', 
+                        'GST Amount', 'Previous Dues', 'Total Payable', 'Interest Charges', 
+                        'GST On Interest', 'Total Payable with Interest', 'Amount', 'Tax', 
+                        'Net Amount', 'Discount', 'Narration', 'Hijri From', 'Hijri To', 'Hierarchy']
 
-    # Save to Excel in-memory
+    df = df[desired_columns]
     output = BytesIO()
-    df.to_excel(output, index=False, engine='xlsxwriter')
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df.drop('Hierarchy', axis=1).to_excel(writer, index=False, sheet_name='Sheet1')
+        worksheet = writer.sheets['Sheet1']
+        for column, column_length in enumerate([len(str(x)) for x in df.drop('Hierarchy', axis=1).columns]):
+            max_length = max([len(str(x)) for x in df.drop('Hierarchy', axis=1).iloc[:, column]] + [column_length])
+            worksheet.set_column(column, column, max(max_length + 2, 20))
+
     output.seek(0)
 
     return output, output_filename
