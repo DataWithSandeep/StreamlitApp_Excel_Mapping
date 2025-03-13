@@ -31,7 +31,7 @@ def mapping_fun(file1, file2, output_filename="invoice_register_detail.xlsx"):
     # Process the hierarchy column
     df = invoice2.copy()
     df['Hierarchy'] = df['Hierarchy'].apply(lambda x: x.split(',')[0])
-    df[['Hierarchy1', 'Hierarchy2']] = df['Hierarchy'].str.split('>>', expand=True)
+    df[['Parent Hierarchy', 'Child Hierarchy']] = df['Hierarchy'].str.split('>>', expand=True)
     desired_columns = ['Company GSTIN', 'Company CIN', 'Business Unit', 
                         'Parent Hierarchy', 'Child Hierarchy', 'Document No',
                         'Document Date', 'Booking No', 'Application No', 
